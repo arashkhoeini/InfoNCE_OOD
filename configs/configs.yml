@@ -1,0 +1,51 @@
+# PyTorch Project Configurations
+
+verbose: true
+cuda: false
+world_size: 1
+rank: 0
+wandb:
+  enable: false
+  project: resnet50-infonce-imagenet
+  key: 7047c70c12cc7631dfdbc7f66f14b27e9d06c71d
+
+# Dataset Configuration
+dataset:
+  name: miniimagenet_toy
+  root: $SLURM_TMPDIR/data
+  batch_size: 64
+
+# Model Configuration
+model:
+  method: supervised_infonce # mocov2 | infonce
+  encoder: resnet50
+  checkpoint_source: microsoft # microsoft | leftthomas | francesco
+  num_negs: 1024
+  temperature: 0.07
+  feature_dim: 128
+  num_classes: 100
+  input_size: [3, 32, 32]
+  pretrained: true
+
+# Pretraining Configuration
+pretraining:
+  epochs: 1
+  warmup_epochs: 1
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  momentum: 0.9
+  checkpoint_freq: 1
+
+training:
+  epochs: 1
+  warmup_epochs: 1
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  momentum: 0.9
+  checkpoint_freq: 1
+
+# Logging Configuration
+logging:
+  log_dir: /path/to/logs
+  tensorboard: true
+  checkpoint: true
