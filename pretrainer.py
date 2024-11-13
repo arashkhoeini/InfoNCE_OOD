@@ -13,6 +13,7 @@ import shutil
 import math
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data.distributed import DistributedSampler
+from utils.lamb import Lamb
 from loss.infonce import SupervisedInfoNCE, InfoNCE
 import wandb
 from utils.metrics import NearestNeighboursMetrics
@@ -46,12 +47,19 @@ class Trainer():
             wandb.init(project=self.configs.wandb.project)
 
     def train(self):
-        lr_scaled = self.configs.pretraining.learning_rate * (self.configs.dataset.batch_size / 256)
-        optimizer = optim.SGD(self.model.parameters(),
-                              lr=lr_scaled, 
-                              momentum=self.configs.pretraining.momentum, 
-                              weight_decay=self.configs.pretraining.weight_decay)
-        
+        global_batch_size = self.configs.dataset.batch_size * self.configs.world_size * self.configs.pretraining.accumulation_steps
+        lr_scaled = self.configs.pretraining.learning_rate * math.sqrt(global_batch_size / 256)
+        if self.configs.pretraining.optimizer == 'sgd':
+            optimizer = optim.SGD(self.model.parameters(),
+                                lr=lr_scaled, 
+                                momentum=self.configs.pretraining.momentum, 
+                                weight_decay=self.configs.pretraining.weight_decay)
+        elif self.configs.pretraining.optimizer == 'lamb':
+            optimizer = Lamb(self.model.parameters(),
+                                lr=lr_scaled, 
+                                weight_decay=self.configs.pretraining.weight_decay)
+        else:
+            raise NotImplementedError(f'optimizer {self.configs.pretraining.optimizer} is unknown')
         cosine_scheduler = CosineAnnealingLR(optimizer, 
                                              T_max=(self.configs.pretraining.epochs - self.configs.pretraining.warmup_epochs))
 
@@ -128,15 +136,17 @@ class Trainer():
             # compute gradient and do SGD step
             # warmup epochs are only used for MoCo in order to fill the queue
 
+            loss.backward()
             if self.configs.model.method == 'mocov2':
                 if epoch +1 > self.configs.pretraining.warmup_epochs:
-                    optimizer.zero_grad()
-                    loss.backward()
-                    optimizer.step()
+                    if (epoch+1)%self.configs.pretraining.accumulation_steps == 0:
+                        optimizer.step()
+                        optimizer.zero_grad() 
             else:
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
+                if (epoch+1)%self.configs.pretraining.accumulation_steps == 0:
+                    optimizer.step()
+                    optimizer.zero_grad()
+                
 
             # measure elapsed time
             batch_time.update(time.time() - end)

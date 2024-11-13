@@ -3,8 +3,6 @@ import argparse
 import sys
 import utils.utils as utils
 from configs.init_configs import init_config
-import numpy as np
-from PIL import Image
 from pathlib import Path
 from pretrainer import Trainer as Pretrainer
 from datetime import datetime
