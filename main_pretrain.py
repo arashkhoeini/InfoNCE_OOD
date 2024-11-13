@@ -27,13 +27,15 @@ def main_worker(configs):
     root_dir = Path(configs.dataset.root)
     if configs.verbose:
         print('loading ood data loaders')
-    cub_loader = utils.get_ood_loader(configs, root_dir/'cub200_toy'/'images')
-    loaders['test'] = {'cub':cub_loader,}# 'cars': cars_loader, 'products': products_loader}
-    if configs.verbose: 
-        print('Data loaders loaded successfully')
-        print(f"training size: {len(loaders['train'].dataset)}")
-        print(f"val size: {len(loaders['val'].dataset)}")
-        print(f"ood cub200 size: {len(cub_loader)}")#, len(car_loader), len(products_loader))
+    loaders['test'] = {}
+    for ood_dataset in configs.dataset.ood:
+        loader = utils.get_ood_loader(configs, root_dir/ood_dataset)
+        loaders['test'][ood_dataset] = loader
+        if configs.verbose: 
+            print('Data loaders loaded successfully')
+            print(f"training size: {len(loaders['train'].dataset)}")
+            print(f"val size: {len(loaders['val'].dataset)}")
+            print(f"{ood_dataset} size: {len(loader)}")#, len(car_loader), len(products_loader))
     model = utils.get_model(configs)
     trainer = Pretrainer(model, loaders, configs)
     trainer.train()
