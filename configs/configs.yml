@@ -13,6 +13,7 @@ wandb:
 dataset:
   name: miniimagenet_toy
   root: $SLURM_TMPDIR/data
+  ood: [cub200_toy/images]
   batch_size: 64
 
 # Model Configuration
