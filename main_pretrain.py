@@ -60,7 +60,7 @@ def main():
     # Dataset Configuration
     parser.add_argument('--dataset.name', default='miniimagenet_toy', type=str, help='name of the dataset')
     parser.add_argument('--dataset.root', default='$SLURM_TMPDIR/data', type=str, help='path to dataset root directory')
-    parser.add_argument('--dataset.ood', default=['cub200_toy/images'], type=list, help='list of out-of-distribution datasets')
+    parser.add_argument('--dataset.ood', default=['cub200_toy/images'], type=str, nargs='+', help='list of out-of-distribution datasets')
     parser.add_argument('--dataset.batch_size', default=64, type=int, help='batch size for training and validation')
 
     # Model Configuration
