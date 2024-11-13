@@ -50,6 +50,7 @@ def main():
     parser.add_argument('--world_size', default=1, type=int, help='number of distributed processes')
     parser.add_argument('--rank', default=0, type=int, help='rank of the current process')
     parser.add_argument('--seed', default=1, type=int, help='random seed for reproducibility')
+    parser.add_argument('--resume', default='', type=str, help='path to checkpoint to resume training')
 
     # WandB Configurations
     parser.add_argument('--wandb.enable', default=False, type=bool, help='enable Weights & Biases logging')
