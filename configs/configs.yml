@@ -4,6 +4,7 @@ verbose: true
 cuda: false
 world_size: 1
 rank: 0
+seed: 1
 wandb:
   enable: false
   project: resnet50-infonce-imagenet
@@ -20,7 +21,6 @@ model:
   method: supervised_infonce # mocov2 | infonce
   encoder: resnet50
   checkpoint_source: microsoft # microsoft | leftthomas | francesco
-  num_negs: 1024
   temperature: 0.07
   feature_dim: 128
   num_classes: 100

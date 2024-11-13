@@ -7,7 +7,18 @@ from pathlib import Path
 from pretrainer import Trainer as Pretrainer
 from datetime import datetime
 import os
+import numpy as np
 
+
+
+def init_seed(seed):
+    '''
+    Disable cudnn to maximize reproducibility
+    '''
+    torch.cuda.cudnn_enabled = False
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
 
 def main_worker(configs):
     if configs.verbose:
@@ -49,8 +60,8 @@ def main():
 
     configs.output_path = os.path.join('output', datetime.now().strftime("%m-%d-%H-%M")) 
     utils.mkdir(configs.output_path)
+    if configs.seed: init_seed(configs.seed)
     main_worker(configs)
-    # Pretrainer.cleanup()
         
 
 if __name__ == '__main__':
